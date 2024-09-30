@@ -1,0 +1,7 @@
+/.DS_Store
+/__pycache__
+*__pycache__*
+*checkpoints.db
+.ipynb_checkpoints/
+.virtual_documents/
+.env
