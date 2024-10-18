@@ -4,6 +4,8 @@ This repository contains a workshop adapted from the course [AI Agents in LangGr
 created by [Harrison Chase](https://www.linkedin.com/in/harrison-chase-961287118) (Co-Founder and CEO of [LangChain](https://www.langchain.com/)) and [Rotem Weiss](https://www.linkedin.com/in/rotem-weiss) (Co-founder and CEO of [Tavily](https://tavily.com/)), and hosted on [DeepLearning.AI](https://www.deeplearning.ai/).
 The original content is used with the consent of the authors.
 
+This workshop is also avalailable in AWS Workshop Studio [here](https://catalog.us-east-1.prod.workshops.aws/workshops/9bc28f51-d7c3-468b-ba41-72667f3273f1/en-US).
+
 Make sure to read and follow this README before you go through the material to ensure a smooth experience.
 
 ## Outline
