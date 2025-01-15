@@ -2,7 +2,12 @@
 name = "deeplearningai-langgraph-agents-with-amazon-bedrock"
 version = "0.1.0"
 description = ""
-authors = ["Philipp Kaindl <philikai@amazon.de>", "Luca Perrozzi <lperroz@amazon.ch>", "Gabriel Rodriguez Garcia <garoga@amazon.com>", "Markus Rollwagen <rollwag@amazon.ch>"]
+authors = [
+    "Philipp Kaindl <philikai@amazon.de>",
+    "Luca Perrozzi <lperroz@amazon.ch>",
+    "Gabriel Rodriguez Garcia <garoga@amazon.com>",
+    "Markus Rollwagen <rollwag@amazon.ch>",
+]
 readme = "README.md"
 package-mode = false
 
@@ -34,8 +39,8 @@ filelock = "3.15.4"
 fonttools = "4.53.1"
 frozenlist = "1.4.1"
 fsspec = "2024.6.1"
-gradio = "5.1.0"
-gradio-client = "1.4.0"
+gradio = "^5.11.0"                      # allow minor and patch version upgrades
+gradio-client = "^1.5.0"
 greenlet = "3.0.3"
 h11 = "0.14.0"
 httpcore = "1.0.5"
