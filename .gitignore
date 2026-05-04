@@ -5,3 +5,5 @@
 .ipynb_checkpoints/
 .virtual_documents/
 .env
+tasks.md
+.venv/

@@ -36,69 +36,80 @@ Let's get started with the setup of the environment.
 
 ## Setup your virtual environment
 
-This instructions are meant to be used locally with [AWS authentication](https://docs.aws.amazon.com/cli/v1/userguide/cli-authentication-short-term.html), as well as within an [Amazon SageMaker JupyterLab](https://docs.aws.amazon.com/sagemaker/latest/dg/studio-updated-jl.html) or [Amazon SageMaker Code Editor](https://docs.aws.amazon.com/sagemaker/latest/dg/code-editor.html) instance.
+These instructions are meant to be used locally with [AWS authentication](https://docs.aws.amazon.com/cli/v1/userguide/cli-authentication-short-term.html), as well as within an [Amazon SageMaker JupyterLab](https://docs.aws.amazon.com/sagemaker/latest/dg/studio-updated-jl.html) or [Amazon SageMaker Code Editor](https://docs.aws.amazon.com/sagemaker/latest/dg/code-editor.html) instance.
 
-The course requires `Python >=3.10` (to install, visit this link: https://www.python.org/downloads/)
+The workshop requires `Python >=3.10` (Python 3.13 recommended) and uses [`uv`](https://docs.astral.sh/uv/) for environment and dependency management.
 
 ### 1. Download the repository
 
 ```
 git clone https://github.com/aws-samples/langgraph-agents-with-amazon-bedrock.git
-```
-
-### 2. Install OS dependencies (Ubuntu/Debian)
-
-```
-sudo apt update
-sudo apt-get install graphviz graphviz-dev python3-dev
-pip install pipx
-pipx install poetry
-pipx ensurepath
-source ~/.bashrc
-```
-
-Installation commands for other OS can be found here: https://pygraphviz.github.io/documentation/stable/install.html
-
-### 3. Create a virtual environment and install python dependencies
-
-```
 cd langgraph-agents-with-amazon-bedrock
-export POETRY_VIRTUALENVS_PATH="$PWD/.venv"
-export INITIAL_WORKING_DIRECTORY=$(pwd)
-poetry shell
 ```
 
+### 2. Install OS dependencies
+
+The notebooks render graph diagrams via [`pygraphviz`](https://pygraphviz.github.io/), which needs the `graphviz` system library.
+
+- **macOS:** `brew install graphviz`
+- **Ubuntu/Debian:** `sudo apt-get update && sudo apt-get install -y graphviz graphviz-dev`
+- **Other:** see [the pygraphviz install guide](https://pygraphviz.github.io/documentation/stable/install.html).
+
+### 3. Install `uv`
+
 ```
-cd $INITIAL_WORKING_DIRECTORY
-poetry install
+curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
 
-### 4. Add the kernel to the Jupyter Notebook server
-The newly created python environment needs to be added to the list of available kernels of the Jupyter Notebook server.
-This is possible from within the poetry environment with the command:
+Other installation options are documented [here](https://docs.astral.sh/uv/getting-started/installation/).
+
+### 4. Create the virtual environment and install dependencies
+
+From the repo root:
+
 ```
-poetry run python -m ipykernel install --user --name agents-dev-env
+uv sync
 ```
-The kernel might not appear right away in the list, in that case a refresh of the list will be needed.
 
-### 5. Create and set your Tavily API key
+`uv` will read `pyproject.toml` and `uv.lock`, install a pinned Python 3.13 interpreter if needed, create `.venv/` in the repo root, and install all dependencies.
 
-Head over to https://app.tavily.com/home and create an API KEY for free. 
+> **macOS note:** if `pygraphviz` fails to build and you installed `graphviz` via Homebrew, prefix the command with the include/lib paths:
+> ```
+> CFLAGS="-I$(brew --prefix graphviz)/include" LDFLAGS="-L$(brew --prefix graphviz)/lib" uv sync
+> ```
 
-### 6. Setup the local environment variables
+### 5. Register the Jupyter kernel
 
-Create a personal copy of the temporary environment file [env.tmp](env.tmp) with the name `.env`, which is already added to the [.gitignore](.gitignore) to avoid committing personal information.
+The new Python environment needs to be registered so that Jupyter can select it:
+
+```
+uv run python -m ipykernel install --user --name agents-dev-env
+```
+
+The kernel may not appear right away in the kernel picker — refresh the list if needed.
+
+### 6. Create and set your Tavily API key
+
+Head over to https://app.tavily.com/home and create a free API key.
+
+### 7. Setup the local environment variables
+
+Create a personal copy of the temporary environment file [env.tmp](env.tmp) with the name `.env`, which is already listed in [.gitignore](.gitignore) to avoid committing personal information.
+
 ```
 cp env.tmp .env
 ```
-You can edit the preferred region to use Amazon Bedrock inside the `.env` file, if needed (the default is `us-east-1`).
 
-### 7. Store the Tavily API key
-You have two options to store the Tavily API key: 
+You can edit the preferred region inside `.env` if needed. The default is `us-east-1`, which is one of the supported source regions for the US cross-region inference profiles used by this workshop.
 
-1. Copy the Tavily API key inside the `.env` file. This option will be always checked first.
+### 8. Store the Tavily API key
 
-2. [Create a new secret in AWS Secrets Manager](https://docs.aws.amazon.com/secretsmanager/latest/userguide/create_secret.html) with the name "TAVILY_API_KEY", retrieve the secret `arn` by clicking on it, and [add an inline policy](https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_manage-attach-detach.html#add-policies-console) with the [permission to read the secret](https://docs.aws.amazon.com/secretsmanager/latest/userguide/auth-and-access_examples.html#auth-and-access_examples_read) to your [SageMaker execution role](https://docs.aws.amazon.com/sagemaker/latest/dg/domain-user-profile-view-describe.html) replacing the copied `arn` in the example below.
+You have two options to store the Tavily API key:
+
+1. Copy the Tavily API key inside the `.env` file. This option is always checked first.
+
+2. [Create a new secret in AWS Secrets Manager](https://docs.aws.amazon.com/secretsmanager/latest/userguide/create_secret.html) with the name `TAVILY_API_KEY`, retrieve the secret `arn` by clicking on it, and [add an inline policy](https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_manage-attach-detach.html#add-policies-console) with [permission to read the secret](https://docs.aws.amazon.com/secretsmanager/latest/userguide/auth-and-access_examples.html#auth-and-access_examples_read) to your [SageMaker execution role](https://docs.aws.amazon.com/sagemaker/latest/dg/domain-user-profile-view-describe.html) — replace the copied `arn` in the example below.
+
 ```
 {
     "Version": "2012-10-17",
@@ -112,7 +123,7 @@ You have two options to store the Tavily API key:
 }
 ```
 
-You are all set! Make sure to select the freshly created `agents-dev-env` kernel for each notebook.
+You are all set! Make sure to select the freshly created `LangGraph agents with Amazon Bedrock` kernel for each notebook.
 
 # Additional resources
 
@@ -120,3 +131,4 @@ You are all set! Make sure to select the freshly created `agents-dev-env` kernel
 - [LangChain documentation](https://python.langchain.com/v0.2/docs/introduction/)
 - [LangGraph github repository](https://github.com/langchain-ai/langgraph)
 - [LangSmith Prompt hub](https://smith.langchain.com/hub)
+angSmith Prompt hub](https://smith.langchain.com/hub)
