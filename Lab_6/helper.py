@@ -65,7 +65,7 @@ class ewriter:
         self.tavily = TavilyClient(api_key=tavily_ai_api_key)
         self.model = ChatBedrockConverse(
             client=self.bedrock_rt,
-            model_id="anthropic.claude-3-haiku-20240307-v1:0",
+            model_id="us.anthropic.claude-haiku-4-5-20251001-v1:0",
             temperature=0,
             max_tokens=None,
         )
