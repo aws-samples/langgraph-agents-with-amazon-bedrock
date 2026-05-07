@@ -4,7 +4,7 @@ This repository contains a workshop adapted from the course [AI Agents in LangGr
 created by [Harrison Chase](https://www.linkedin.com/in/harrison-chase-961287118) (Co-Founder and CEO of [LangChain](https://www.langchain.com/)) and [Rotem Weiss](https://www.linkedin.com/in/rotem-weiss) (Co-founder and CEO of [Tavily](https://tavily.com/)), and hosted on [DeepLearning.AI](https://www.deeplearning.ai/).
 The original content is used with the consent of the authors.
 
-This workshop is also avalailable in AWS Workshop Studio [here](https://catalog.us-east-1.prod.workshops.aws/workshops/9bc28f51-d7c3-468b-ba41-72667f3273f1/en-US).
+This workshop is also available in AWS Workshop Studio [here](https://catalog.us-east-1.prod.workshops.aws/workshops/9bc28f51-d7c3-468b-ba41-72667f3273f1/en-US).
 
 Make sure to read and follow this README before you go through the material to ensure a smooth experience.
 
@@ -31,6 +31,15 @@ The material is divided in six Jupyter Notebooks Labs that will help you underst
     - Build an AI essay writer using a multi-step process involving planning, research, writing, reflection, and revision, implemented as a graph of interconnected agents
 
 If this is your first time working with LangGraph, we recommend to refer to the [original course](https://www.deeplearning.ai/short-courses/ai-agents-in-langgraph/) for detailed video explanations.
+
+## Models used
+
+The labs call two Anthropic models on Amazon Bedrock via **US geographic cross-region inference (CRIS)** profiles:
+
+- **Claude Haiku 4.5** — `us.anthropic.claude-haiku-4-5-20251001-v1:0` — used as the default across Labs 2, 4, 5, and 6.
+- **Claude Sonnet 4.6** — `us.anthropic.claude-sonnet-4-6` — used in Lab 1 and as the "upgrade" model demonstrated in Lab 2.
+
+CRIS routes requests within the US geography for higher throughput and resilience. When called from `us-east-1`, `us-east-2`, or `us-west-2`, Bedrock may route to any of those three Regions. You must enable model access for **both models** in **all three Regions** the profile can route to, otherwise invocations will fail with an access-denied error when a request happens to land on a Region where the model isn't enabled for your account.
 
 Let's get started with the setup of the environment.
 
@@ -123,12 +132,13 @@ You have two options to store the Tavily API key:
 }
 ```
 
-You are all set! Make sure to select the freshly created `LangGraph agents with Amazon Bedrock` kernel for each notebook.
+You are all set! Make sure to select the freshly created `agents-dev-env` kernel for each notebook.
 
 # Additional resources
 
 - [Amazon Bedrock User Guide](https://docs.aws.amazon.com/bedrock/latest/userguide/what-is-bedrock.html)
-- [LangChain documentation](https://python.langchain.com/v0.2/docs/introduction/)
-- [LangGraph github repository](https://github.com/langchain-ai/langgraph)
+- [LangChain documentation](https://docs.langchain.com/oss/python/langchain/overview)
+- [LangGraph documentation](https://docs.langchain.com/oss/python/langgraph/overview)
+- [LangGraph GitHub repository](https://github.com/langchain-ai/langgraph)
 - [LangSmith Prompt hub](https://smith.langchain.com/hub)
-angSmith Prompt hub](https://smith.langchain.com/hub)
+
