@@ -8,6 +8,14 @@ This workshop is also available in AWS Workshop Studio [here](https://catalog.us
 
 Make sure to read and follow this README before you go through the material to ensure a smooth experience.
 
+> **What's updated (May 2026):** the workshop was refreshed for the current Bedrock and LangChain/LangGraph ecosystem. Highlights:
+>
+> - Models updated to **Claude Haiku 4.5** and **Claude Sonnet 4.6** via US geographic cross-region inference profiles (see ["Models used"](#models-used)).
+> - Notebooks ported to LangGraph 1.x and LangChain 1.x, including `TavilySearch` (replacing the deprecated `TavilySearchResults`) and the `ddgs` package.
+> - Environment management migrated from Poetry to [`uv`](https://docs.astral.sh/uv/); lockfile is committed for reproducible installs.
+> - Tavily is still the default search tool, but a DuckDuckGo fallback is now available for participants without a Tavily key (see ["Running without a Tavily key"](#running-without-a-tavily-key)).
+> - README gained a short section positioning LangGraph against Strands Agents, Bedrock AgentCore, and Bedrock Agents.
+
 ## Outline
 
 The workshop:
