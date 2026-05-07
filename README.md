@@ -144,6 +144,21 @@ You have two options to store the Tavily API key:
 
 You are all set! Make sure to select the freshly created `agents-dev-env` kernel for each notebook.
 
+## Running without a Tavily key
+
+If you don't want to create a Tavily account, the workshop has a built-in DuckDuckGo fallback for the subset of labs where the agent just needs *some* web search tool.
+
+| Lab | Runs without Tavily? | Notes |
+|-----|----------------------|-------|
+| 1 — ReAct from scratch | Yes | Doesn't use Tavily. |
+| 2 — LangGraph components | Yes, with a one-line edit | Replace `tool = TavilySearch(max_results=4)` with `tool = utils.get_search_tool(max_results=4)`. |
+| 3 — Agentic search tools | No | The whole point of the lab is comparing Tavily's structured agentic results against a plain DuckDuckGo search. |
+| 4 — Persistence & streaming | Yes, with a one-line edit | Same swap as Lab 2. |
+| 5 — Human in the loop | Yes, with a one-line edit | Same swap as Lab 2. Note: the hardcoded tool-call name strings assume Tavily's tool name `tavily_search`; if you use the fallback, change them to `duckduckgo_results_json`. |
+| 6 — Essay writer | No | Uses `TavilyClient.search()` directly and relies on Tavily's structured results. |
+
+`utils.get_search_tool()` returns a Tavily-backed tool if `TAVILY_API_KEY` is set (in `.env` or Secrets Manager) and a DuckDuckGo-backed tool otherwise. Both are LangChain `BaseTool` instances and can be wired into a LangGraph agent identically.
+
 # Additional resources
 
 - [Amazon Bedrock User Guide](https://docs.aws.amazon.com/bedrock/latest/userguide/what-is-bedrock.html)

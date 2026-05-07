@@ -25,7 +25,8 @@ dependencies = [
 
     # Agentic search
     "tavily-python>=0.7",
-    "duckduckgo-search>=8.0",
+    "langchain-tavily>=0.2",
+    "ddgs>=9.14",
 
     # Notebook utilities + Lab 6 UI
     "python-dotenv>=1.0",
