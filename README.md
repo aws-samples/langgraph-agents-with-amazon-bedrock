@@ -41,6 +41,16 @@ The labs call two Anthropic models on Amazon Bedrock via **US geographic cross-r
 
 CRIS routes requests within the US geography for higher throughput and resilience. When called from `us-east-1`, `us-east-2`, or `us-west-2`, Bedrock may route to any of those three Regions. You must enable model access for **both models** in **all three Regions** the profile can route to, otherwise invocations will fail with an access-denied error when a request happens to land on a Region where the model isn't enabled for your account.
 
+## Where LangGraph fits among AWS agent options
+
+LangGraph is one of several ways to build agents on AWS. This workshop focuses on LangGraph because of its flexible graph-based control flow, but it's worth knowing where it sits relative to the AWS-native options:
+
+- **[Strands Agents](https://strandsagents.com/)** — an AWS-released open-source SDK that takes a model-first approach: you give it a prompt and a list of tools, and the model decides how to plan and call them. Strands is a lighter-weight alternative to LangGraph for agents that don't need explicit graph control flow. Both work well on Bedrock.
+- **[Amazon Bedrock AgentCore](https://aws.amazon.com/bedrock/agentcore/)** — a fully managed, **framework-agnostic** runtime for deploying agents built with *any* framework (LangGraph, Strands, CrewAI, LlamaIndex, ...). AgentCore provides serverless hosting, session isolation, long-lived memory, a tool gateway, and observability, without replacing your framework choice. A natural production target for anything you build in this workshop.
+- **[Amazon Bedrock Agents](https://aws.amazon.com/bedrock/agents/)** — the highest-abstraction option: a fully managed agent service where you declare action groups, knowledge bases, and optional guardrails, and AWS handles the orchestration. Best when you want the least code and don't need custom control flow.
+
+In short: use LangGraph (or Strands) when you want the most control over agent behavior, AgentCore when you need to deploy and operate any of them at scale, and Bedrock Agents when a fully-managed, configuration-driven agent is enough.
+
 Let's get started with the setup of the environment.
 
 ## Setup your virtual environment
@@ -137,6 +147,9 @@ You are all set! Make sure to select the freshly created `agents-dev-env` kernel
 # Additional resources
 
 - [Amazon Bedrock User Guide](https://docs.aws.amazon.com/bedrock/latest/userguide/what-is-bedrock.html)
+- [Strands Agents](https://strandsagents.com/) — open-source, model-first agents SDK
+- [Amazon Bedrock AgentCore](https://aws.amazon.com/bedrock/agentcore/) — framework-agnostic managed runtime for agents
+- [Amazon Bedrock Agents](https://aws.amazon.com/bedrock/agents/) — fully managed, configuration-driven agents
 - [LangChain documentation](https://docs.langchain.com/oss/python/langchain/overview)
 - [LangGraph documentation](https://docs.langchain.com/oss/python/langgraph/overview)
 - [LangGraph GitHub repository](https://github.com/langchain-ai/langgraph)
