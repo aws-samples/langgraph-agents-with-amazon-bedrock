@@ -25,9 +25,8 @@ from langchain_core.messages import (
 )
 
 import boto3
-from langchain_openai import ChatOpenAI
 from langchain_aws import ChatBedrockConverse
-from langchain_core.pydantic_v1 import BaseModel
+from pydantic import BaseModel
 from tavily import TavilyClient
 import os
 import sqlite3
@@ -35,9 +34,9 @@ import sqlite3
 
 # for the output parser
 from typing import List
-from langchain.output_parsers import PydanticOutputParser
+from langchain_core.output_parsers import PydanticOutputParser
 from langchain_core.prompts import PromptTemplate
-from langchain_core.pydantic_v1 import BaseModel, Field
+from pydantic import BaseModel, Field
 import json
 
 
