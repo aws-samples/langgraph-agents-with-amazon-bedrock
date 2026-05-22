@@ -40,6 +40,13 @@ GitHub provides additional document on [forking a repository](https://help.githu
 [creating a pull request](https://help.github.com/articles/creating-a-pull-request/).
 
 
+### Notebook hygiene
+
+JupyterLab rewrites the embedded `kernelspec` to whatever kernel actually ran the notebook (typically `.venv` / `python3` on a uv-managed environment) and bumps `language_info.version` to the running interpreter. The README asks participants to register a kernel called `agents-dev-env` (step 5 of setup), so the notebooks should ship with that name regardless of which kernel the maintainer ran them under.
+
+Run `python scripts/normalize_notebooks.py` before committing any notebook changes. The script clears outputs, pins the kernelspec to `agents-dev-env`, and pins `language_info.version` to a stable placeholder. It reports what it changed and exits 0 even when the working tree was already clean.
+
+
 ## Finding contributions to work on
 Looking at the existing issues is a great way to find something to contribute on. As our projects, by default, use the default GitHub issue labels (enhancement/bug/duplicate/help wanted/invalid/question/wontfix), looking at any 'help wanted' issues is a great place to start.
 

@@ -167,6 +167,14 @@ If you don't want to create a Tavily account, the workshop has a built-in DuckDu
 
 `utils.get_search_tool()` returns a Tavily-backed tool if `TAVILY_API_KEY` is set (in `.env` or Secrets Manager) and a DuckDuckGo-backed tool otherwise. Both are LangChain `BaseTool` instances and can be wired into a LangGraph agent identically.
 
+## Lab 6: Gradio share link
+
+Lab 6 launches a Gradio web UI via `app.launch(share=True)`. The `share=True` flag asks Gradio to publish a public URL through a small frpc binary that Gradio downloads from HuggingFace on first launch. This is needed when running the lab in [Amazon SageMaker JupyterLab](https://docs.aws.amazon.com/sagemaker/latest/dg/studio-updated-jl.html) so the UI is reachable from outside the Studio iframe.
+
+If you're running locally and the binary download is blocked (corporate firewall, missing connectivity, antivirus), Gradio prints a `Could not create share link. Missing file: frpc_<platform>_v0.3` warning and falls back to the local-only URL (`http://127.0.0.1:7860`). For local testing this is fine — open the local URL and ignore the warning.
+
+If you want the public share link locally, follow the manual install instructions printed in the warning, or see the [Gradio sharing guide](https://www.gradio.app/guides/sharing-your-app).
+
 # Additional resources
 
 - [Amazon Bedrock User Guide](https://docs.aws.amazon.com/bedrock/latest/userguide/what-is-bedrock.html)
