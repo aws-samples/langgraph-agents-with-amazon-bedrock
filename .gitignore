@@ -4,6 +4,7 @@
 *checkpoints.db
 .ipynb_checkpoints/
 .virtual_documents/
+.gradio/
 .env
 tasks.md
 .venv/
