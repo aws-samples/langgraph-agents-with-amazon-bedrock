@@ -1834,7 +1834,7 @@ requires-dist = [
     { name = "beautifulsoup4", specifier = ">=4.12" },
     { name = "boto3", specifier = ">=1.40" },
     { name = "ddgs", specifier = ">=9.14" },
-    { name = "gradio", specifier = ">=5.0" },
+    { name = "gradio", specifier = ">=6.0" },
     { name = "ipykernel", specifier = ">=6.29" },
     { name = "jupyter", specifier = ">=1.1" },
     { name = "langchain", specifier = ">=1.0,<2" },
