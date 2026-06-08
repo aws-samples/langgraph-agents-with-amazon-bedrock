@@ -32,7 +32,7 @@ dependencies = [
     "python-dotenv>=1.0",
     "pygments>=2.18",
     "pygraphviz>=1.14",
-    "gradio>=6.0",
+    "gradio>=6.0,<7",
     "beautifulsoup4>=4.12",
     "requests>=2.32",
 
