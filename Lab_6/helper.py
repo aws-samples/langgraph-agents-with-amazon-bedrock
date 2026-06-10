@@ -1,8 +1,14 @@
 from dotenv import load_dotenv
 import os
 import sys
-sys.path.append('../utils')
-import utils
+
+# Add the repo root to sys.path so `from utils import utils` resolves to
+# utils/utils.py (the module), not the empty utils/__init__.py package.
+HELPER_DIR = os.path.dirname(os.path.abspath(__file__))
+REPO_ROOT = os.path.dirname(HELPER_DIR)
+if REPO_ROOT not in sys.path:
+    sys.path.insert(0, REPO_ROOT)
+from utils import utils
 
 # Load environment variables from .env file or Secret Manager
 _ = load_dotenv("../.env")
@@ -25,9 +31,8 @@ from langchain_core.messages import (
 )
 
 import boto3
-from langchain_openai import ChatOpenAI
 from langchain_aws import ChatBedrockConverse
-from langchain_core.pydantic_v1 import BaseModel
+from pydantic import BaseModel
 from tavily import TavilyClient
 import os
 import sqlite3
@@ -35,9 +40,9 @@ import sqlite3
 
 # for the output parser
 from typing import List
-from langchain.output_parsers import PydanticOutputParser
+from langchain_core.output_parsers import PydanticOutputParser
 from langchain_core.prompts import PromptTemplate
-from langchain_core.pydantic_v1 import BaseModel, Field
+from pydantic import BaseModel, Field
 import json
 
 
@@ -65,7 +70,7 @@ class ewriter:
         self.tavily = TavilyClient(api_key=tavily_ai_api_key)
         self.model = ChatBedrockConverse(
             client=self.bedrock_rt,
-            model_id="anthropic.claude-3-haiku-20240307-v1:0",
+            model="us.anthropic.claude-haiku-4-5-20251001-v1:0",
             temperature=0,
             max_tokens=None,
         )
@@ -168,7 +173,7 @@ class ewriter:
         # Create a Queries object from the parsed JSON
         parsed_queries = Queries(**queries_dict)
 
-        content = state["content"] or []
+        content = state.get("content") or []
         for q in parsed_queries.queries:
             response = self.tavily.search(query=q, max_results=2)
             for r in response["results"]:
@@ -181,7 +186,7 @@ class ewriter:
         }
 
     def generation_node(self, state: AgentState):
-        content = "\n\n".join(state["content"] or [])
+        content = "\n\n".join(state.get("content") or [])
         user_message = HumanMessage(
             content=f"{state['task']}\n\nHere is my plan:\n\n{state['plan']}"
         )
@@ -239,7 +244,7 @@ class ewriter:
         # Create a Queries object from the parsed JSON
         parsed_queries = Queries(**queries_dict)
 
-        content = state["content"] or []
+        content = state.get("content") or []
         for q in parsed_queries.queries:
             response = self.tavily.search(query=q, max_results=2)
             for r in response["results"]:
@@ -361,25 +366,25 @@ class writer_gui:
         for state in self.graph.get_state_history(self.thread):
             if state.metadata["step"] < 1:
                 continue
-            thread_ts = state.config["configurable"]["thread_ts"]
+            checkpoint_id = state.config["configurable"]["checkpoint_id"]
             tid = state.config["configurable"]["thread_id"]
             count = state.values["count"]
             lnode = state.values["lnode"]
             rev = state.values["revision_number"]
             nnode = state.next
-            st = f"{tid}:{count}:{lnode}:{nnode}:{rev}:{thread_ts}"
+            st = f"{tid}:{count}:{lnode}:{nnode}:{rev}:{checkpoint_id}"
             hist.append(st)
         return gr.Dropdown(
-            label="update_state from: thread:count:last_node:next_node:rev:thread_ts",
+            label="update_state from: thread:count:last_node:next_node:rev:checkpoint_id",
             choices=hist,
             value=hist[0],
             interactive=True,
         )
 
-    def find_config(self, thread_ts):
+    def find_config(self, checkpoint_id):
         for state in self.graph.get_state_history(self.thread):
             config = state.config
-            if config["configurable"]["thread_ts"] == thread_ts:
+            if config["configurable"]["checkpoint_id"] == checkpoint_id:
                 return config
         return None
 
@@ -387,22 +392,22 @@ class writer_gui:
         """result of selecting an old state from the step pulldown. Note does not change thread.
         This copies an old state to a new current state.
         """
-        thread_ts = hist_str.split(":")[-1]
-        # print(f"copy_state from {thread_ts}")
-        config = self.find_config(thread_ts)
+        checkpoint_id = hist_str.split(":")[-1]
+        # print(f"copy_state from {checkpoint_id}")
+        config = self.find_config(checkpoint_id)
         # print(config)
         state = self.graph.get_state(config)
         self.graph.update_state(
             self.thread, state.values, as_node=state.values["lnode"]
         )
         new_state = self.graph.get_state(self.thread)  # should now match
-        new_thread_ts = new_state.config["configurable"]["thread_ts"]
+        new_checkpoint_id = new_state.config["configurable"]["checkpoint_id"]
         tid = new_state.config["configurable"]["thread_id"]
         count = new_state.values["count"]
         lnode = new_state.values["lnode"]
         rev = new_state.values["revision_number"]
         nnode = new_state.next
-        return lnode, nnode, new_thread_ts, rev, count
+        return lnode, nnode, new_checkpoint_id, rev, count
 
     def update_thread_pd(
         self,
@@ -410,7 +415,7 @@ class writer_gui:
         # print("update_thread_pd")
         return gr.Dropdown(
             label="choose thread",
-            choices=threads,
+            choices=self.threads,
             value=self.thread_id,
             interactive=True,
         )
@@ -432,10 +437,7 @@ class writer_gui:
         return
 
     def create_interface(self):
-        with gr.Blocks(
-            theme=gr.themes.Default(spacing_size="sm", text_size="sm"),
-            analytics_enabled=False 
-        ) as demo:
+        with gr.Blocks(analytics_enabled=False) as demo:
 
             def updt_disp():
                 """general update display on state change"""
@@ -445,13 +447,13 @@ class writer_gui:
                 for state in self.graph.get_state_history(self.thread):
                     if state.metadata["step"] < 1:  # ignore early states
                         continue
-                    s_thread_ts = state.config["configurable"]["thread_ts"]
+                    s_checkpoint_id = state.config["configurable"]["checkpoint_id"]
                     s_tid = state.config["configurable"]["thread_id"]
                     s_count = state.values["count"]
                     s_lnode = state.values["lnode"]
                     s_rev = state.values["revision_number"]
                     s_nnode = state.next
-                    st = f"{s_tid}:{s_count}:{s_lnode}:{s_nnode}:{s_rev}:{s_thread_ts}"
+                    st = f"{s_tid}:{s_count}:{s_lnode}:{s_nnode}:{s_rev}:{s_checkpoint_id}"
                     hist.append(st)
                 if not current_state.metadata:  # handle init call
                     return {}
@@ -470,7 +472,7 @@ class writer_gui:
                             interactive=True,
                         ),
                         step_pd: gr.Dropdown(
-                            label="update_state from: thread:count:last_node:next_node:rev:thread_ts",
+                            label="update_state from: thread:count:last_node:next_node:rev:checkpoint_id",
                             choices=hist,
                             value=hist[0],
                             interactive=True,
@@ -650,7 +652,7 @@ class writer_gui:
         return demo
 
     def launch(self):
-            self.demo.launch(share=True)
+            self.demo.launch(share=True, theme=gr.themes.Default(spacing_size="sm", text_size="sm"))
 
 
 if __name__ == "__main__":

@@ -4,9 +4,17 @@ This repository contains a workshop adapted from the course [AI Agents in LangGr
 created by [Harrison Chase](https://www.linkedin.com/in/harrison-chase-961287118) (Co-Founder and CEO of [LangChain](https://www.langchain.com/)) and [Rotem Weiss](https://www.linkedin.com/in/rotem-weiss) (Co-founder and CEO of [Tavily](https://tavily.com/)), and hosted on [DeepLearning.AI](https://www.deeplearning.ai/).
 The original content is used with the consent of the authors.
 
-This workshop is also avalailable in AWS Workshop Studio [here](https://catalog.us-east-1.prod.workshops.aws/workshops/9bc28f51-d7c3-468b-ba41-72667f3273f1/en-US).
+This workshop is also available in AWS Workshop Studio [here](https://catalog.us-east-1.prod.workshops.aws/workshops/9bc28f51-d7c3-468b-ba41-72667f3273f1/en-US).
 
 Make sure to read and follow this README before you go through the material to ensure a smooth experience.
+
+> **What's updated (May 2026):** the workshop was refreshed for the current Bedrock and LangChain/LangGraph ecosystem. Highlights:
+>
+> - Models updated to **Claude Haiku 4.5** and **Claude Sonnet 4.6** via US geographic cross-region inference profiles (see ["Models used"](#models-used)).
+> - Notebooks ported to LangGraph 1.x and LangChain 1.x, including `TavilySearch` (replacing the deprecated `TavilySearchResults`) and the `ddgs` package.
+> - Environment management migrated from Poetry to [`uv`](https://docs.astral.sh/uv/); lockfile is committed for reproducible installs.
+> - Tavily is still the default search tool, but a DuckDuckGo fallback is now available for participants without a Tavily key (see ["Running without a Tavily key"](#running-without-a-tavily-key)).
+> - README gained a short section positioning LangGraph against Strands Agents, Bedrock AgentCore, and Bedrock Agents.
 
 ## Outline
 
@@ -32,73 +40,103 @@ The material is divided in six Jupyter Notebooks Labs that will help you underst
 
 If this is your first time working with LangGraph, we recommend to refer to the [original course](https://www.deeplearning.ai/short-courses/ai-agents-in-langgraph/) for detailed video explanations.
 
+## Models used
+
+The labs call two Anthropic models on Amazon Bedrock via **US geographic cross-region inference (CRIS)** profiles:
+
+- **Claude Haiku 4.5** — `us.anthropic.claude-haiku-4-5-20251001-v1:0` — used as the default across Labs 2, 4, 5, and 6.
+- **Claude Sonnet 4.6** — `us.anthropic.claude-sonnet-4-6` — used in Lab 1 and as the "upgrade" model demonstrated in Lab 2.
+
+CRIS routes requests within the US geography for higher throughput and resilience. When called from `us-east-1`, `us-east-2`, or `us-west-2`, Bedrock may route to any of those three Regions. You must enable model access for **both models** in **all three Regions** the profile can route to, otherwise invocations will fail with an access-denied error when a request happens to land on a Region where the model isn't enabled for your account.
+
+## Where LangGraph fits among AWS agent options
+
+LangGraph is one of several ways to build agents on AWS. This workshop focuses on LangGraph because of its flexible graph-based control flow, but it's worth knowing where it sits relative to the AWS-native options:
+
+- **[Strands Agents](https://strandsagents.com/)** — an AWS-released open-source SDK that takes a model-first approach: you give it a prompt and a list of tools, and the model decides how to plan and call them. Strands is a lighter-weight alternative to LangGraph for agents that don't need explicit graph control flow. Both work well on Bedrock.
+- **[Amazon Bedrock AgentCore](https://aws.amazon.com/bedrock/agentcore/)** — a fully managed, **framework-agnostic** runtime for deploying agents built with *any* framework (LangGraph, Strands, CrewAI, LlamaIndex, ...). AgentCore provides serverless hosting, session isolation, long-lived memory, a tool gateway, and observability, without replacing your framework choice. A natural production target for anything you build in this workshop.
+- **[Amazon Bedrock Agents](https://aws.amazon.com/bedrock/agents/)** — the highest-abstraction option: a fully managed agent service where you declare action groups, knowledge bases, and optional guardrails, and AWS handles the orchestration. Best when you want the least code and don't need custom control flow.
+
+In short: use LangGraph (or Strands) when you want the most control over agent behavior, AgentCore when you need to deploy and operate any of them at scale, and Bedrock Agents when a fully-managed, configuration-driven agent is enough.
+
 Let's get started with the setup of the environment.
 
 ## Setup your virtual environment
 
-This instructions are meant to be used locally with [AWS authentication](https://docs.aws.amazon.com/cli/v1/userguide/cli-authentication-short-term.html), as well as within an [Amazon SageMaker JupyterLab](https://docs.aws.amazon.com/sagemaker/latest/dg/studio-updated-jl.html) or [Amazon SageMaker Code Editor](https://docs.aws.amazon.com/sagemaker/latest/dg/code-editor.html) instance.
+These instructions are meant to be used locally with [AWS authentication](https://docs.aws.amazon.com/cli/v1/userguide/cli-authentication-short-term.html), as well as within an [Amazon SageMaker JupyterLab](https://docs.aws.amazon.com/sagemaker/latest/dg/studio-updated-jl.html) or [Amazon SageMaker Code Editor](https://docs.aws.amazon.com/sagemaker/latest/dg/code-editor.html) instance.
 
-The course requires `Python >=3.10` (to install, visit this link: https://www.python.org/downloads/)
+The workshop requires `Python >=3.10` (Python 3.13 recommended) and uses [`uv`](https://docs.astral.sh/uv/) for environment and dependency management.
 
 ### 1. Download the repository
 
 ```
 git clone https://github.com/aws-samples/langgraph-agents-with-amazon-bedrock.git
-```
-
-### 2. Install OS dependencies (Ubuntu/Debian)
-
-```
-sudo apt update
-sudo apt-get install graphviz graphviz-dev python3-dev
-pip install pipx
-pipx install poetry
-pipx ensurepath
-source ~/.bashrc
-```
-
-Installation commands for other OS can be found here: https://pygraphviz.github.io/documentation/stable/install.html
-
-### 3. Create a virtual environment and install python dependencies
-
-```
 cd langgraph-agents-with-amazon-bedrock
-export POETRY_VIRTUALENVS_PATH="$PWD/.venv"
-export INITIAL_WORKING_DIRECTORY=$(pwd)
-poetry shell
 ```
 
+### 2. Install OS dependencies
+
+The notebooks render graph diagrams via [`pygraphviz`](https://pygraphviz.github.io/), which needs the `graphviz` system library.
+
+- **macOS:** `brew install graphviz`
+- **Ubuntu/Debian:** `sudo apt-get update && sudo apt-get install -y graphviz graphviz-dev`
+- **Other:** see [the pygraphviz install guide](https://pygraphviz.github.io/documentation/stable/install.html).
+
+### 3. Install `uv`
+
 ```
-cd $INITIAL_WORKING_DIRECTORY
-poetry install
+curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
 
-### 4. Add the kernel to the Jupyter Notebook server
-The newly created python environment needs to be added to the list of available kernels of the Jupyter Notebook server.
-This is possible from within the poetry environment with the command:
+Other installation options are documented [here](https://docs.astral.sh/uv/getting-started/installation/).
+
+### 4. Create the virtual environment and install dependencies
+
+From the repo root:
+
 ```
-poetry run python -m ipykernel install --user --name agents-dev-env
+uv sync
 ```
-The kernel might not appear right away in the list, in that case a refresh of the list will be needed.
 
-### 5. Create and set your Tavily API key
+`uv` will read `pyproject.toml` and `uv.lock`, install a pinned Python 3.13 interpreter if needed, create `.venv/` in the repo root, and install all dependencies.
 
-Head over to https://app.tavily.com/home and create an API KEY for free. 
+> **macOS note:** if `pygraphviz` fails to build and you installed `graphviz` via Homebrew, prefix the command with the include/lib paths:
+> ```
+> CFLAGS="-I$(brew --prefix graphviz)/include" LDFLAGS="-L$(brew --prefix graphviz)/lib" uv sync
+> ```
 
-### 6. Setup the local environment variables
+### 5. Register the Jupyter kernel
 
-Create a personal copy of the temporary environment file [env.tmp](env.tmp) with the name `.env`, which is already added to the [.gitignore](.gitignore) to avoid committing personal information.
+The new Python environment needs to be registered so that Jupyter can select it:
+
+```
+uv run python -m ipykernel install --user --name agents-dev-env
+```
+
+The kernel may not appear right away in the kernel picker — refresh the list if needed.
+
+### 6. Create and set your Tavily API key
+
+Head over to https://app.tavily.com/home and create a free API key.
+
+### 7. Setup the local environment variables
+
+Create a personal copy of the temporary environment file [env.tmp](env.tmp) with the name `.env`, which is already listed in [.gitignore](.gitignore) to avoid committing personal information.
+
 ```
 cp env.tmp .env
 ```
-You can edit the preferred region to use Amazon Bedrock inside the `.env` file, if needed (the default is `us-east-1`).
 
-### 7. Store the Tavily API key
-You have two options to store the Tavily API key: 
+You can edit the preferred region inside `.env` if needed. The default is `us-east-1`, which is one of the supported source regions for the US cross-region inference profiles used by this workshop.
 
-1. Copy the Tavily API key inside the `.env` file. This option will be always checked first.
+### 8. Store the Tavily API key
 
-2. [Create a new secret in AWS Secrets Manager](https://docs.aws.amazon.com/secretsmanager/latest/userguide/create_secret.html) with the name "TAVILY_API_KEY", retrieve the secret `arn` by clicking on it, and [add an inline policy](https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_manage-attach-detach.html#add-policies-console) with the [permission to read the secret](https://docs.aws.amazon.com/secretsmanager/latest/userguide/auth-and-access_examples.html#auth-and-access_examples_read) to your [SageMaker execution role](https://docs.aws.amazon.com/sagemaker/latest/dg/domain-user-profile-view-describe.html) replacing the copied `arn` in the example below.
+You have two options to store the Tavily API key:
+
+1. Copy the Tavily API key inside the `.env` file. This option is always checked first.
+
+2. [Create a new secret in AWS Secrets Manager](https://docs.aws.amazon.com/secretsmanager/latest/userguide/create_secret.html) with the name `TAVILY_API_KEY`, retrieve the secret `arn` by clicking on it, and [add an inline policy](https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_manage-attach-detach.html#add-policies-console) with [permission to read the secret](https://docs.aws.amazon.com/secretsmanager/latest/userguide/auth-and-access_examples.html#auth-and-access_examples_read) to your [SageMaker execution role](https://docs.aws.amazon.com/sagemaker/latest/dg/domain-user-profile-view-describe.html) — replace the copied `arn` in the example below.
+
 ```
 {
     "Version": "2012-10-17",
@@ -114,9 +152,37 @@ You have two options to store the Tavily API key:
 
 You are all set! Make sure to select the freshly created `agents-dev-env` kernel for each notebook.
 
+## Running without a Tavily key
+
+If you don't want to create a Tavily account, the workshop has a built-in DuckDuckGo fallback for the subset of labs where the agent just needs *some* web search tool.
+
+| Lab | Runs without Tavily? | Notes |
+|-----|----------------------|-------|
+| 1 — ReAct from scratch | Yes | Doesn't use Tavily. |
+| 2 — LangGraph components | Yes, with a one-line edit | Replace `tool = TavilySearch(max_results=4)` with `tool = utils.get_search_tool(max_results=4)`. |
+| 3 — Agentic search tools | No | The whole point of the lab is comparing Tavily's structured agentic results against a plain DuckDuckGo search. |
+| 4 — Persistence & streaming | Yes, with a one-line edit | Same swap as Lab 2. |
+| 5 — Human in the loop | Yes, with a one-line edit | Same swap as Lab 2. Note: the hardcoded tool-call name strings assume Tavily's tool name `tavily_search`; if you use the fallback, change them to `duckduckgo_results_json`. |
+| 6 — Essay writer | No | Uses `TavilyClient.search()` directly and relies on Tavily's structured results. |
+
+`utils.get_search_tool()` returns a Tavily-backed tool if `TAVILY_API_KEY` is set (in `.env` or Secrets Manager) and a DuckDuckGo-backed tool otherwise. Both are LangChain `BaseTool` instances and can be wired into a LangGraph agent identically.
+
+## Lab 6: Gradio share link
+
+Lab 6 launches a Gradio web UI via `app.launch(share=True)`. The `share=True` flag asks Gradio to publish a public URL through a small frpc binary that Gradio downloads from HuggingFace on first launch. This is needed when running the lab in [Amazon SageMaker JupyterLab](https://docs.aws.amazon.com/sagemaker/latest/dg/studio-updated-jl.html) so the UI is reachable from outside the Studio iframe.
+
+If you're running locally and the binary download is blocked (corporate firewall, missing connectivity, antivirus), Gradio prints a `Could not create share link. Missing file: frpc_<platform>_v0.3` warning and falls back to the local-only URL (`http://127.0.0.1:7860`). For local testing this is fine — open the local URL and ignore the warning.
+
+If you want the public share link locally, follow the manual install instructions printed in the warning, or see the [Gradio sharing guide](https://www.gradio.app/guides/sharing-your-app).
+
 # Additional resources
 
 - [Amazon Bedrock User Guide](https://docs.aws.amazon.com/bedrock/latest/userguide/what-is-bedrock.html)
-- [LangChain documentation](https://python.langchain.com/v0.2/docs/introduction/)
-- [LangGraph github repository](https://github.com/langchain-ai/langgraph)
+- [Strands Agents](https://strandsagents.com/) — open-source, model-first agents SDK
+- [Amazon Bedrock AgentCore](https://aws.amazon.com/bedrock/agentcore/) — framework-agnostic managed runtime for agents
+- [Amazon Bedrock Agents](https://aws.amazon.com/bedrock/agents/) — fully managed, configuration-driven agents
+- [LangChain documentation](https://docs.langchain.com/oss/python/langchain/overview)
+- [LangGraph documentation](https://docs.langchain.com/oss/python/langgraph/overview)
+- [LangGraph GitHub repository](https://github.com/langchain-ai/langgraph)
 - [LangSmith Prompt hub](https://smith.langchain.com/hub)
+
