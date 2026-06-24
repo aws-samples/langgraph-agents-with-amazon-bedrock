@@ -129,6 +129,8 @@ cp env.tmp .env
 
 You can edit the preferred region inside `.env` if needed. The default is `us-east-1`, which is one of the supported source regions for the US cross-region inference profiles used by this workshop.
 
+If you are running **locally** and use a named AWS profile (e.g. via `aws configure` or short-term CLI credentials), uncomment the `AWS_PROFILE` line in `.env` and set it to your profile name. Leave it commented out in SageMaker Studio, where credentials are provided by the execution role.
+
 ### 8. Store the Tavily API key
 
 You have two options to store the Tavily API key:
