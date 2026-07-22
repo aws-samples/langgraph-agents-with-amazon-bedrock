@@ -1,5 +1,10 @@
 # LangGraph Agents with Amazon Bedrock
 
+> **Part of a 2-session workshop.** This README covers the **Session 1 foundation** (the
+> `Lab_1`–`Lab_6` labs). For the full two-session workshop — including **Session 2: deploying these
+> agents on Amazon Bedrock AgentCore** (memory, observability, PII guardrails, MCP/Gateway to
+> internal APIs, and US data residency) — start with **[`WORKSHOP.md`](./WORKSHOP.md)**.
+
 This repository contains a workshop adapted from the course [AI Agents in LangGraph](https://www.deeplearning.ai/short-courses/ai-agents-in-langgraph/) 
 created by [Harrison Chase](https://www.linkedin.com/in/harrison-chase-961287118) (Co-Founder and CEO of [LangChain](https://www.langchain.com/)) and [Rotem Weiss](https://www.linkedin.com/in/rotem-weiss) (Co-founder and CEO of [Tavily](https://tavily.com/)), and hosted on [DeepLearning.AI](https://www.deeplearning.ai/).
 The original content is used with the consent of the authors.
@@ -10,7 +15,7 @@ Make sure to read and follow this README before you go through the material to e
 
 > **What's updated (May 2026):** the workshop was refreshed for the current Bedrock and LangChain/LangGraph ecosystem. Highlights:
 >
-> - Models updated to **Claude Haiku 4.5** and **Claude Sonnet 4.6** via US geographic cross-region inference profiles (see ["Models used"](#models-used)).
+> - Migrated to **Amazon Nova Pro** (`us.amazon.nova-pro-v1:0`) via US geographic cross-region inference profiles (see ["Models used"](#models-used)).
 > - Notebooks ported to LangGraph 1.x and LangChain 1.x, including `TavilySearch` (replacing the deprecated `TavilySearchResults`) and the `ddgs` package.
 > - Environment management migrated from Poetry to [`uv`](https://docs.astral.sh/uv/); lockfile is committed for reproducible installs.
 > - Tavily is still the default search tool, but a DuckDuckGo fallback is now available for participants without a Tavily key (see ["Running without a Tavily key"](#running-without-a-tavily-key)).
@@ -42,12 +47,14 @@ If this is your first time working with LangGraph, we recommend to refer to the 
 
 ## Models used
 
-The labs call two Anthropic models on Amazon Bedrock via **US geographic cross-region inference (CRIS)** profiles:
+The labs call two **Amazon Nova** models on Amazon Bedrock via **US geographic cross-region inference (CRIS)** profiles:
 
-- **Claude Haiku 4.5** — `us.anthropic.claude-haiku-4-5-20251001-v1:0` — used as the default across Labs 2, 4, 5, and 6.
-- **Claude Sonnet 4.6** — `us.anthropic.claude-sonnet-4-6` — used in Lab 1 and as the "upgrade" model demonstrated in Lab 2.
+- **Amazon Nova Lite** — `us.amazon.nova-lite-v1:0` — the fast / cost-efficient default, used across Labs 2, 4, 5, and 6.
+- **Amazon Nova Pro** — `us.amazon.nova-pro-v1:0` — the reasoning tier, used in Lab 1 and as the "upgrade" model demonstrated in Lab 2 (and by the Session 2 tracks).
 
-CRIS routes requests within the US geography for higher throughput and resilience. When called from `us-east-1`, `us-east-2`, or `us-west-2`, Bedrock may route to any of those three Regions. You must enable model access for **both models** in **all three Regions** the profile can route to, otherwise invocations will fail with an access-denied error when a request happens to land on a Region where the model isn't enabled for your account.
+US CRIS routes requests within the US geography for higher throughput and resilience while keeping inference inside US Regions (data residency). When called from `us-east-1`, Bedrock may route to other US Regions the profile supports. You must enable model access for **both models** in `us-east-1` **and all US CRIS destination Regions**, otherwise invocations will fail with an access-denied error when a request happens to land on a Region where the model isn't enabled for your account.
+
+> **Note:** This workshop was migrated from Anthropic Claude to Amazon Nova (Claude is blocked in some Workshop Studio accounts): the fast Claude Haiku tier maps to **Nova Lite** and the Claude Sonnet reasoning tier maps to **Nova Pro**. Nova does not support the `top_k` inference parameter, so inference configs use only `temperature`, `top_p`/`topP`, `max_tokens`/`maxTokens`, and `stop_sequences`/`stopSequences`.
 
 ## Where LangGraph fits among AWS agent options
 
@@ -127,7 +134,7 @@ Create a personal copy of the temporary environment file [env.tmp](env.tmp) with
 cp env.tmp .env
 ```
 
-You can edit the preferred region inside `.env` if needed. The default is `us-east-1`, which is one of the supported source regions for the US cross-region inference profiles used by this workshop.
+You can edit the preferred region inside `.env` if needed. The default is `us-east-1` (N. Virginia), the source region for the US cross-region inference profile used by this workshop.
 
 ### 8. Store the Tavily API key
 

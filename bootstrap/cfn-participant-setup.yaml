@@ -1,0 +1,156 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >
+  Workshop bootstrap (LangGraph + AgentCore, us-east-1). Creates a customer-managed IAM
+  policy with the permissions the labs need and (optionally) attaches it to an existing
+  IAM role or group. Deploy once per participant account. Model access must still be
+  enabled in the Bedrock console separately.
+
+Parameters:
+  AttachToRoleName:
+    Type: String
+    Default: ""
+    Description: Optional existing IAM role name to attach the workshop policy to.
+  AttachToGroupName:
+    Type: String
+    Default: ""
+    Description: Optional existing IAM group name to attach the workshop policy to.
+
+Conditions:
+  HasRole: !Not [!Equals [!Ref AttachToRoleName, ""]]
+  HasGroup: !Not [!Equals [!Ref AttachToGroupName, ""]]
+
+Resources:
+  WorkshopPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      ManagedPolicyName: workshop-langgraph-agentcore
+      Description: Workshop-scoped permissions for the LangGraph + AgentCore workshop (us-east-1).
+      Roles: !If [HasRole, [!Ref AttachToRoleName], !Ref "AWS::NoValue"]
+      Groups: !If [HasGroup, [!Ref AttachToGroupName], !Ref "AWS::NoValue"]
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: BedrockUsGeoCris
+            Effect: Allow
+            Action:
+              - bedrock:InvokeModel
+              - bedrock:InvokeModelWithResponseStream
+            Resource:
+              - arn:aws:bedrock:us-east-1:*:inference-profile/us.amazon.nova-*
+              - arn:aws:bedrock:us-east-1::foundation-model/amazon.nova-*
+              - arn:aws:bedrock:us-east-2::foundation-model/amazon.nova-*
+              - arn:aws:bedrock:us-west-2::foundation-model/amazon.nova-*
+          - Sid: BedrockReadAndGuardrails
+            Effect: Allow
+            Action:
+              - bedrock:List*
+              - bedrock:Get*
+              - bedrock:CreateGuardrail
+              - bedrock:UpdateGuardrail
+              - bedrock:CreateGuardrailVersion
+              - bedrock:DeleteGuardrail
+              - bedrock:ApplyGuardrail
+            Resource: "*"
+          - Sid: AgentCore
+            Effect: Allow
+            Action:
+              - bedrock-agentcore:*
+            Resource: "*"
+          - Sid: ComprehendPii
+            Effect: Allow
+            Action: comprehend:DetectPiiEntities
+            Resource: "*"
+          - Sid: WorkshopSecrets
+            Effect: Allow
+            Action:
+              - secretsmanager:CreateSecret
+              - secretsmanager:PutSecretValue
+              - secretsmanager:GetSecretValue
+              - secretsmanager:DescribeSecret
+              - secretsmanager:DeleteSecret
+              - secretsmanager:TagResource
+            Resource:
+              - arn:aws:secretsmanager:us-east-1:*:secret:internal/*
+              - arn:aws:secretsmanager:us-east-1:*:secret:workshop/*
+          - Sid: ContainerBuildAndObservability
+            Effect: Allow
+            Action:
+              - ecr:CreateRepository
+              - ecr:DescribeRepositories
+              - ecr:GetAuthorizationToken
+              - ecr:BatchCheckLayerAvailability
+              - ecr:BatchGetImage
+              - ecr:GetDownloadUrlForLayer
+              - ecr:InitiateLayerUpload
+              - ecr:UploadLayerPart
+              - ecr:CompleteLayerUpload
+              - ecr:PutImage
+              - ecr:DeleteRepository
+              - codebuild:CreateProject
+              - codebuild:StartBuild
+              - codebuild:BatchGetBuilds
+              - codebuild:BatchGetProjects
+              - codebuild:DeleteProject
+              - logs:CreateLogGroup
+              - logs:CreateLogStream
+              - logs:PutLogEvents
+              - logs:DescribeLogGroups
+              - logs:DescribeLogStreams
+              - logs:GetLogEvents
+              - logs:DeleteLogGroup
+              - cloudwatch:PutMetricData
+              - cloudwatch:GetMetricData
+              - cloudwatch:ListMetrics
+              - xray:PutTraceSegments
+              - xray:GetTraceSummaries
+            Resource: "*"
+          - Sid: GatewayCognitoAndLambda
+            Effect: Allow
+            Action:
+              - cognito-idp:CreateUserPool
+              - cognito-idp:CreateUserPoolClient
+              - cognito-idp:CreateUserPoolDomain
+              - cognito-idp:DescribeUserPoolClient
+              - cognito-idp:DeleteUserPool
+              - lambda:CreateFunction
+              - lambda:InvokeFunction
+              - lambda:GetFunction
+              - lambda:UpdateFunctionCode
+              - lambda:UpdateFunctionConfiguration
+              - lambda:AddPermission
+              - lambda:DeleteFunction
+            Resource: "*"
+          - Sid: IamForServiceRolesScoped
+            Effect: Allow
+            Action:
+              - iam:CreateRole
+              - iam:GetRole
+              - iam:DeleteRole
+              - iam:AttachRolePolicy
+              - iam:DetachRolePolicy
+              - iam:PutRolePolicy
+              - iam:DeleteRolePolicy
+              - iam:CreatePolicy
+              - iam:TagRole
+            Resource:
+              - arn:aws:iam::*:role/workshop-*
+              - arn:aws:iam::*:role/AgentCore*
+              - arn:aws:iam::*:policy/workshop-*
+          - Sid: PassRoleToWorkshopServices
+            Effect: Allow
+            Action: iam:PassRole
+            Resource:
+              - arn:aws:iam::*:role/workshop-*
+              - arn:aws:iam::*:role/AgentCore*
+            Condition:
+              StringEquals:
+                iam:PassedToService:
+                  - bedrock.amazonaws.com
+                  - bedrock-agentcore.amazonaws.com
+                  - lambda.amazonaws.com
+                  - codebuild.amazonaws.com
+
+Outputs:
+  WorkshopPolicyArn:
+    Description: ARN of the workshop managed policy.
+    Value: !Ref WorkshopPolicy

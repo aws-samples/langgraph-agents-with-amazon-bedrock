@@ -1,6 +1,6 @@
 # Lab 5: Human in the Loop
 
-Welcome to this advanced section on implementing human-in-the-loop interactions with AI agents using LangGraph, Anthropic's Claude model on Amazon Bedrock. 
+Welcome to this advanced section on implementing human-in-the-loop interactions with AI agents using LangGraph and the Amazon Nova Pro model on Amazon Bedrock. 
 This section is designed for solution architects and data scientists looking to build sophisticated AI systems with human oversight capabilities.
 
 Before we dive into the code, let's understand the big picture. Imagine you're architecting a mission-critical AI system for a large enterprise. This system needs to make complex decisions, but also requires human oversight for accountability and error correction. This is where human-in-the-loop AI comes in.

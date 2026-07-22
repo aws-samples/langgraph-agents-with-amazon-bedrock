@@ -1,0 +1,35 @@
+{
+  "lambdaArn": "<REPLACE_WITH_LAMBDA_ARN>",
+  "toolSchema": {
+    "inlinePayload": [
+      {
+        "name": "get_order_status",
+        "description": "Get the delivery status of a customer order by its ID.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "order_id": {
+              "type": "string",
+              "description": "The order identifier, e.g. 35476"
+            }
+          },
+          "required": ["order_id"]
+        }
+      },
+      {
+        "name": "query_internal_graphql",
+        "description": "Run a read-only GraphQL query against the internal API.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "string",
+              "description": "A GraphQL query string"
+            }
+          },
+          "required": ["query"]
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,6 @@
+# Track 1 - LangGraph agent on AgentCore Runtime
+# Pin loosely for the workshop; capture exact versions during the pre-flight.
+bedrock-agentcore
+langgraph>=1.0
+langchain-aws>=0.2
+langchain-core>=0.3

@@ -1,0 +1,20 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "DenyBedrockOutsideUS",
+      "Effect": "Deny",
+      "Action": ["bedrock:*"],
+      "Resource": "*",
+      "Condition": {
+        "StringNotEquals": {
+          "aws:RequestedRegion": [
+            "us-east-1",
+            "us-east-2",
+            "us-west-2"
+          ]
+        }
+      }
+    }
+  ]
+}

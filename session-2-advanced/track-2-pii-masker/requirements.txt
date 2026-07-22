@@ -1,0 +1,6 @@
+# Track 2 - PII Masker
+bedrock-agentcore
+langgraph>=1.0
+langchain-aws>=0.2
+langchain-core>=0.3
+boto3>=1.34

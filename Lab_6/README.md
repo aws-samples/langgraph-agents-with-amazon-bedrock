@@ -1,13 +1,13 @@
 # Lab 6: Essay Writer
 
-In this section, we'll embark on an exciting project that brings together various concepts we've learned so far: we're going to build an AI-powered Essay Writer. This project will demonstrate how to create a more complex, multi-step AI agent using Amazon Bedrock and Anthropic's Claude model.
+In this section, we'll embark on an exciting project that brings together various concepts we've learned so far: we're going to build an AI-powered Essay Writer. This project will demonstrate how to create a more complex, multi-step AI agent using Amazon Bedrock and the Amazon Nova Pro model.
 
 ## What You'll Learn
 
 1. How to structure a multi-agent system for a complex task
 2. Implementing a state machine using LangGraph
 3. Integrating external research capabilities with the Tavily API
-4. Using Claude on Amazon Bedrock for various subtasks within the system
+4. Using Amazon Nova Pro on Amazon Bedrock for various subtasks within the system
 5. Building a simple GUI to interact with your AI Essay Writer
 
 ## Project Overview
